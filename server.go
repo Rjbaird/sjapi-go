@@ -2,23 +2,53 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
+
+	"github.com/bairrya/sjapi/config"
+	"github.com/bairrya/sjapi/jobs"
+	"github.com/go-co-op/gocron"
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
+	// load config
+	config, err := config.ENV()
 
-	// results, err := web.ScrapeAllSeries()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// err = db.InsertManyManga(results)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// setu cron jobs
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(1).Hour().Do(func() { jobs.Heartbeat() })
 
-	fmt.Println("working")
-	// TODO: add cron jobs
-	// TODO: add fiber server
+	// setu fiber server
+	app := fiber.New()
+
+	// define routes
+	// app routes
+	// GET / (home)
+	// GET /manga/:handle
+	// GET /rss
+	// GET lite (lite version of site)
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"title": "Welcome to Shonen Jump API!",
+			"port":  config.PORT,
+		})
+	})
+
+	// api routes
+	// api := app.Group("/api")
+	// GET /api/manga
+	// GET /api/manga/:handle
+
+	// Start jobs and server
+	s.StartAsync()
+	log.Fatal(app.Listen(fmt.Sprintf(":%s", config.PORT)))
+	// DONE: add cron jobs
+	// DONE: add fiber server
 	// TODO: add routes
 	// TODO: add middleware
 	// TODO: add controllers
