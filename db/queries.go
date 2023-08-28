@@ -74,7 +74,7 @@ func InsertManyManga(results *[]web.Manga) error {
 	}
 
 	if insert != nil {
-		fmt.Printf("Inserted %v documents", len(insert.InsertedIDs))
+		fmt.Printf("Inserted %v documents\n", len(insert.InsertedIDs))
 	}
 	return nil
 }
