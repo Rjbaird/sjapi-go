@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -20,7 +21,7 @@ type Manga struct {
 	Handle        string   `json:"handle" bson:"handle,omitempts"`
 	Description   string   `json:"description" bson:"description,omitempts"`
 	Author        string   `json:"author" bson:"author,omitempts"`
-	Image         string   `json:"hero_image" bson:"image,omitempts"`
+	HeroImage     string   `json:"hero_image" bson:"image,omitempts"`
 	LatestRelease string   `json:"latest_release" bson:"latest_release,omitempts"`
 	Recommended   []string `json:"recommended" bson:"recommended,omitempts"`
 }
@@ -54,7 +55,7 @@ func ScrapeRecentChapters() (*[]RecentManga, error) {
 	return &results, nil
 }
 
-func ScrapeSeries(handle string) (*Manga, error) {
+func ScrapeOneSeries(handle string) (*Manga, error) {
 	seriesURL := "https://www.viz.com/shonenjump/chapters/" + handle
 	results := Manga{}
 
@@ -82,9 +83,10 @@ func ScrapeSeries(handle string) (*Manga, error) {
 		})
 		manga := Manga{
 			Title:         title,
+			Handle:        handle,
 			Description:   description,
 			Author:        author,
-			Image:         image,
+			HeroImage:     image,
 			LatestRelease: latest_release,
 			Recommended:   recommended,
 		}
@@ -92,4 +94,32 @@ func ScrapeSeries(handle string) (*Manga, error) {
 	})
 	c.Visit(seriesURL)
 	return &results, nil
+}
+
+func ScrapeAllSeries() (*[]Manga, error) {
+	allSeries, err := ScrapeRecentChapters()
+	if err != nil {
+		return nil, err
+	}
+	estimateTime := secondsToMinutes(len(*allSeries) * 3)
+	fmt.Printf("Estimated time to scrape all series: %v\n", estimateTime)
+	mangaSlice := []Manga{}
+	fmt.Println("Scraping all series...")
+	for _, series := range *allSeries {
+		manga, err := ScrapeOneSeries(series.Handle)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("Scraped %s\n", manga.Title)
+		mangaSlice = append(mangaSlice, *manga)
+		time.Sleep(3 * time.Second)
+	}
+	return &mangaSlice, nil
+}
+
+func secondsToMinutes(inSeconds int) string {
+	minutes := inSeconds / 60
+	seconds := inSeconds % 60
+	str := fmt.Sprintf("%v:%v", minutes, seconds)
+	return str
 }
