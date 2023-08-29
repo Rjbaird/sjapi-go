@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"log"
+
+	"github.com/bairrya/sjapi/db"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,18 +23,31 @@ func LitePage(c *fiber.Ctx) error {
 
 func AllMangaPage(c *fiber.Ctx) error {
 	// Render manga template
+	manga, err := db.FindAllManga()
+
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
+	}
 	return c.Render("manga", fiber.Map{
-		"Title": "Shonen Jump | Read Free Manga Online!",
+		"Manga": manga,
 	})
 }
 
 func SeriesPage(c *fiber.Ctx) error {
 	// Render series template
-	// TODO: get handle from query param
-	// TODO: get series from db
-	// TODO: render series template
+	handle := c.Params("handle")
+	series, err := db.FindOneManga(handle)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			// TODO: update w/ fiber error for all 500s
+			"error": "Internal Server Error",
+		})
+	}
+	log.Println(series)
 	return c.Render("series", fiber.Map{
-		"Title": "Shonen Jump | Read Free Manga Online!",
+		"Series": series,
 	})
 }
 

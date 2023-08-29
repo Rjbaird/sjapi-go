@@ -41,19 +41,17 @@ func main() {
 	server.Use(recover.New())
 
 	// define routes
+
 	// app routes
-	// GET /rss (rss feed)
-	// GET lite (lite version of all manga)
 	server.Get("/", controllers.MainPage)
-	// server.Get("/manga", controllers.AllMangaPage)
-	// server.Get("/manga/:handle", controllers.SeriesPage)
+	server.Get("/manga", controllers.AllMangaPage)
+	server.Get("/manga/:handle", controllers.SeriesPage)
 	server.Get("/lite", controllers.LitePage)
-	// server.Get("/rss", controllers.RssFeed)
+	server.Get("/rss", controllers.RssFeed)
 
 	// api routes
 	api := server.Group("/api")
 	api.Use(requestid.New())
-	// TODO: add limiter
 	api.Get("/", controllers.ApiWelcome)
 	api.Get("manga", controllers.GetAllManga)
 	api.Get("manga/:handle", controllers.GetSeries)
@@ -62,7 +60,16 @@ func main() {
 	s.StartAsync()
 	log.Fatal(server.Listen(fmt.Sprintf(":%s", config.PORT)))
 
+	// NOTE: TODOs
+	// TODO: add metadata to /api {version, uptime, docs, last update, etc}
+	// TODO: add versioning to api routes
+	// TODO: add api tests https://www.youtube.com/watch?v=XQzTUa9LPU8, https://www.youtube.com/watch?v=Ztk9d78HgC0
+	// TODO: add daily manga update cron job
+
+	// TODO: add limiter
 	// TODO: add xml engine https://github.com/gofiber/recipes/blob/master/rss-feed/main.go
 	// TODO: add swaggerdocs https://github.com/gofiber/swagger
-	// TODO: add api tests https://www.youtube.com/watch?v=XQzTUa9LPU8, https://www.youtube.com/watch?v=Ztk9d78HgC0
+	// TODO: create routes package
+	// TODO: add /images route for promotional hero images
+	// TODO: add jwt auth to api routes
 }

@@ -1,0 +1,12 @@
+{{ define "manga"}}
+<h3>Manga</h3>
+<ul class="list-none">
+    {{ range .Manga }}
+    <li>
+        <strong>{{.Title}}</strong>
+        <p>{{.Description}}</p>
+        <p>{{.Author}}</p>
+    </li>
+    {{ end }}
+</ul>
+{{ end }}
