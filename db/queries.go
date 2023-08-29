@@ -6,29 +6,26 @@ import (
 
 	"github.com/bairrya/sjapi/web"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func FindAllManga() (*[]web.Manga, error) {
+func FindAllManga() (*[]primitive.M, error) {
+	
 	client, err := Init()
 	if err != nil {
 		return nil, err
 	}
 	defer client.Disconnect(context.Background())
+	coll := client.Database("shonen-jump").Collection("manga")
 
-	manga := make([]web.Manga, 0)
-	cursor, err := client.Database("shonen-jump").Collection("manga").Find(context.Background(), nil)
+	manga := []bson.M{}
+	// TODO: add a limit to the number of results
+	filter := bson.D{{}}
+	cursor, err := coll.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
-
-	for cursor.Next(context.Background()) {
-		var series web.Manga
-		if err = cursor.Decode(&series); err != nil {
-			return nil, err
-		}
-		manga = append(manga, series)
-	}
-
+	cursor.All(context.Background(), &manga)
 	return &manga, nil
 }
 

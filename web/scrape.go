@@ -108,6 +108,7 @@ func ScrapeAllSeries() (*[]Manga, error) {
 	for _, series := range *allSeries {
 		manga, err := ScrapeOneSeries(series.Handle)
 		if err != nil {
+			// NOTE: can I catch this error and continue by appending the series to the slice? Or does that cause an infinite loop?
 			return nil, err
 		}
 		fmt.Printf("Scraped %s\n", manga.Title)
