@@ -46,7 +46,6 @@ func main() {
 	server.Get("/", controllers.MainPage)
 	server.Get("/manga", controllers.AllMangaPage)
 	server.Get("/manga/:handle", controllers.SeriesPage)
-	server.Get("/lite", controllers.LitePage)
 	server.Get("/rss", controllers.RssFeed)
 
 	// api routes

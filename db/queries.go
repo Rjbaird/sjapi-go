@@ -6,6 +6,7 @@ import (
 
 	"github.com/bairrya/sjapi/web"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func FindAllManga() (*[]web.Manga, error) {
@@ -21,6 +22,25 @@ func FindAllManga() (*[]web.Manga, error) {
 	// TODO: add a limit to the number of results
 	filter := bson.D{{}}
 	cursor, err := coll.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	cursor.All(context.Background(), &manga)
+	return &manga, nil
+}
+
+func FindRecentManga() (*[]web.Manga, error) {
+	client, err := Init()
+	if err != nil {
+		return nil, err
+	}
+	defer client.Disconnect(context.Background())
+	coll := client.Database("shonen-jump").Collection("manga")
+
+	manga := []web.Manga{}
+	filter := bson.D{{Key: "latest_release", Value: bson.D{{Key: "$ne", Value: ""}}}}
+	opts := options.Find().SetLimit(30)
+	cursor, err := coll.Find(context.TODO(), filter, opts)
 	if err != nil {
 		return nil, err
 	}

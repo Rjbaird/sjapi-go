@@ -8,16 +8,14 @@ import (
 )
 
 func MainPage(c *fiber.Ctx) error {
-	// Render index template
-	return c.Render("index", fiber.Map{
-		"Title": "Shonen Jump | Read Free Manga Online!",
-	})
-}
-
-func LitePage(c *fiber.Ctx) error {
-	// Render lite template
-	return c.Render("lite", fiber.Map{
-		"Title": "Shonen Jump Lite | Read Free Manga Online!",
+	manga, err := db.FindRecentManga()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
+	}
+	return c.Render("manga", fiber.Map{
+		"Manga": manga,
 	})
 }
 

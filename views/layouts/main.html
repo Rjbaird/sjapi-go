@@ -12,6 +12,7 @@
         {{template "partials/unocss" .}}
     </head>
     <body class="min-h-screen max-w-full">
-        {{embed}}
+        {{template "partials/header" .}} {{embed}} {{template "partials/footer"
+        .}}
     </body>
 </html>
