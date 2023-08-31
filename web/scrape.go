@@ -17,13 +17,17 @@ type RecentManga struct {
 }
 
 type Manga struct {
-	Title         string   `json:"title" bson:"title,omitempts"`
-	Handle        string   `json:"handle" bson:"handle,omitempts"`
-	Description   string   `json:"description" bson:"description,omitempts"`
-	Author        string   `json:"author" bson:"author,omitempts"`
-	HeroImage     string   `json:"hero_image" bson:"image,omitempts"`
-	LatestRelease string   `json:"latest_release" bson:"latest_release,omitempts"`
-	Recommended   []string `json:"recommended" bson:"recommended,omitempts"`
+	Title       string `json:"title" bson:"title,omitempts"`
+	Handle      string `json:"handle" bson:"handle,omitempts"`
+	Description string `json:"description" bson:"description,omitempts"`
+	Author      string `json:"author" bson:"author,omitempts"`
+	HeroImage   string `json:"hero_image" bson:"image,omitempts"`
+	// TODO: parse date from latest release before adding to struct
+	LatestRelease string `json:"latest_release" bson:"latest_release,omitempts"`
+	// TODO: add recent chapter link
+	Recommended []string `json:"recommended" bson:"recommended,omitempts"`
+	// TODO: add recommended manga titles to struct
+
 }
 
 func ScrapeRecentChapters() (*[]RecentManga, error) {

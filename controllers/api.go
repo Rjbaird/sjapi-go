@@ -1,19 +1,16 @@
 package controllers
 
 import (
-	"github.com/bairrya/sjapi/config"
 	"github.com/bairrya/sjapi/db"
 	"github.com/gofiber/fiber/v2"
 )
 
 func ApiWelcome(c *fiber.Ctx) error {
-	// Load environment variables config
-	config, _ := config.ENV()
 	// TODO: handle config errors
 	return c.JSON(fiber.Map{
-		"title":       "Welcome to the Shonen Jump API!",
-		"description": "The Shonen Jump API is a JSON API for the Shonen Jump manga series.",
-		"port":        config.PORT,
+		"title":        "Welcome to the Shonen Jump API!",
+		"description":  "The Shonen Jump API is a JSON API for the Shonen Jump manga series.",
+		"last_updated": "2023-09-01",
 	})
 }
 
@@ -43,5 +40,11 @@ func GetSeries(c *fiber.Ctx) error {
 	// TODO: render series json
 	return c.JSON(fiber.Map{
 		"data": series,
+	})
+}
+
+func LimitReachedJSON(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{
+		"data": "Rate limit reached. Please try again later.",
 	})
 }

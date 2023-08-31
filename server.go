@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -51,6 +52,15 @@ func main() {
 	// api routes
 	api := server.Group("/api")
 	api.Use(requestid.New())
+	api.Use(limiter.New(limiter.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.IP() == "127.0.0.1"
+		},
+		Max:          20,
+		Expiration:   30 * time.Second,
+		LimitReached: controllers.LimitReachedJSON,
+	}))
+
 	api.Get("/", controllers.ApiWelcome)
 	api.Get("manga", controllers.GetAllManga)
 	api.Get("manga/:handle", controllers.GetSeries)
@@ -61,7 +71,6 @@ func main() {
 
 	// NOTE: TODOs
 	// TODO: add metadata to /api {version, uptime, docs, last update, etc}
-	// TODO: add versioning to api routes
 	// TODO: add api tests https://www.youtube.com/watch?v=XQzTUa9LPU8, https://www.youtube.com/watch?v=Ztk9d78HgC0
 	// TODO: add daily manga update cron job
 
