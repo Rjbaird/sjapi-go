@@ -30,6 +30,8 @@ func main() {
 	// setup cron jobs
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(1).Hour().Do(func() { jobs.Heartbeat() })
+	// s.Every(1).Hour().Do(func() { jobs.RefreshAllManga() })
+	// s.Every(1).Day().At("09:00").WaitForSchedule().Do(func() { jobs.RefreshAllManga() })
 
 	// setup fiber server
 	engine := html.New("./views", ".html")
@@ -53,9 +55,6 @@ func main() {
 	api := server.Group("/api")
 	api.Use(requestid.New())
 	api.Use(limiter.New(limiter.Config{
-		Next: func(c *fiber.Ctx) bool {
-			return c.IP() == "127.0.0.1"
-		},
 		Max:          20,
 		Expiration:   30 * time.Second,
 		LimitReached: controllers.LimitReachedJSON,
@@ -72,9 +71,7 @@ func main() {
 	// NOTE: TODOs
 	// TODO: add metadata to /api {version, uptime, docs, last update, etc}
 	// TODO: add api tests https://www.youtube.com/watch?v=XQzTUa9LPU8, https://www.youtube.com/watch?v=Ztk9d78HgC0
-	// TODO: add daily manga update cron job
 
-	// TODO: add limiter
 	// TODO: add xml engine https://github.com/gofiber/recipes/blob/master/rss-feed/main.go
 	// TODO: add swaggerdocs https://github.com/gofiber/swagger
 	// TODO: create routes package

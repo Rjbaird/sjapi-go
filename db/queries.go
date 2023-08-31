@@ -94,3 +94,20 @@ func InsertManyManga(results *[]web.Manga) error {
 	}
 	return nil
 }
+
+func DropMangaCollection() error {
+	client, err := Init()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect(context.Background())
+
+	db := client.Database("shonen-jump")
+	mangaCollection := db.Collection("manga")
+
+	err = mangaCollection.Drop(context.Background())
+	if err != nil {
+		return err
+	}
+	return nil
+}

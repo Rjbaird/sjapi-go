@@ -1,13 +1,13 @@
 {{ define "manga"}}
-<h3>Manga</h3>
-<ul class="list-none">
+<h1 class="text-2xl font-bold">Viz: Weekly Shonen Jump</h1>
+{{template "partials/bar" .}}
+<ul class="list-none p-0">
     {{ range .Manga }}
-    <li>
-        <strong>{{.Title}}</strong>
-        <p>{{.Description}}</p>
-        <p>{{.Author}}</p>
-        <p>{{.LatestRelease}}</p>
+    <li class="pb-4">
+        <a href="https://www.viz.com/shonenjump/chapters/{{.Handle}}"
+            >{{.Title}}: {{.LatestRelease}}</a
+        >
     </li>
     {{ end }}
 </ul>
-{{ end }}
+{{template "partials/bar" .}} {{ end }}

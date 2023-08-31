@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"log"
-
 	"github.com/bairrya/sjapi/db"
 	"github.com/gofiber/fiber/v2"
 )
@@ -43,7 +41,6 @@ func SeriesPage(c *fiber.Ctx) error {
 			"error": "Internal Server Error",
 		})
 	}
-	log.Println(series)
 	return c.Render("series", fiber.Map{
 		"Series": series,
 	})
