@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bairrya/sjapi/db"
+	"github.com/bairrya/sjapi/jobs"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -57,9 +58,18 @@ func SeriesPage(c *fiber.Ctx) error {
 	})
 }
 
+func ContactPage(c *fiber.Ctx) error {
+	// Render contact template
+	return c.Render("contact", fiber.Map{})
+}
+
 func RssFeed(c *fiber.Ctx) error {
-	// Render rss template
-	return c.Render("rss", fiber.Map{
-		"Title": "Shonen Jump | Read Free Manga Online!",
-	})
+	feed, err := jobs.GenerateRssFeed()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Internal Server Error",
+		})
+	}
+	c.Type("xml")
+	return c.XML(feed)
 }

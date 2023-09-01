@@ -8,17 +8,18 @@ import (
 )
 
 func RefreshAllManga() error {
-	// Drop all manga from db
-	err := db.DropMangaCollection()
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
 	// Scrape manga from viz
 	manga, err := web.ScrapeAllSeries()
 	if err != nil {
 		log.Fatal(err)
 		return err
+	}
+
+	// Drop all manga from db
+	dropErr := db.DropMangaCollection()
+	if dropErr != nil {
+		log.Fatal(dropErr)
+		return dropErr
 	}
 
 	// Insert manga into db
@@ -27,5 +28,9 @@ func RefreshAllManga() error {
 		log.Fatal(err)
 		return err
 	}
+	return nil
+}
+
+func RefreshRecentManga() error {
 	return nil
 }
