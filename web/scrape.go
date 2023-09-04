@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,12 +23,39 @@ type Manga struct {
 	Description string `json:"description" bson:"description,omitempts"`
 	Author      string `json:"author" bson:"author,omitempts"`
 	HeroImage   string `json:"hero_image" bson:"image,omitempts"`
+	// TODO: download image to exertnal storage and save link to db
 	// TODO: parse date from latest release before adding to struct
-	LatestRelease string `json:"latest_release" bson:"latest_release,omitempts"`
-	// TODO: add recent chapter link
-	Recommended []string `json:"recommended" bson:"recommended,omitempts"`
-	// TODO: add recommended manga titles to struct
+	LatestRelease string             `json:"latest_release" bson:"latest_release,omitempts"`
+	NextRelease   string             `json:"next_release" bson:"next_release,omitempts"`
+	Recommended   []RecommendedManga `json:"recommended" bson:"recommended,omitempts"`
+	Chapters      []Chapter          `json:"chapters" bson:"chapters,omitempts"`
+	Volumes       []Volumn           `json:"volumes" bson:"volumes,omitempts"`
+	Mature        bool               `json:"mature" bson:"mature,omitempts"`
+}
 
+type Chapter struct {
+	ID     string  `json:"id" bson:"id,omitempts"`
+	Number float64 `json:"number" bson:"number,omitempts"`
+	Date   string  `json:"date" bson:"date,omitempts"`
+	Link   string  `json:"link" bson:"link,omitempts"`
+	Free   bool    `json:"free" bson:"free,omitempts"`
+	Mature bool    `json:"mature" bson:"mature,omitempts"`
+}
+
+type Volumn struct {
+	Number   string    `json:"number" bson:"number,omitempts"`
+	Link     string    `json:"link" bson:"link,omitempts"`
+	Chapters []Chapter `json:"chapters" bson:"chapters,omitempts"`
+	// TODO: add extra info from volumn link to volumn struct
+	// Image
+	// Description
+	// Release date
+	// ISBN
+}
+
+type RecommendedManga struct {
+	Title  string `json:"title" bson:"title,omitempts"`
+	Handle string `json:"handle" bson:"handle,omitempts"`
 }
 
 func ScrapeRecentChapters() (*[]RecentManga, error) {
@@ -75,16 +103,106 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 	})
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
-		recommended := []string{}
+		recommended := []RecommendedManga{}
+		chapters := []Chapter{}
+		volumns := []Volumn{}
+
+		// basic info
 		title := e.ChildText("h2.type-lg")
 		description := e.ChildText("div.line-solid.type-md")
 		author := e.ChildText("span.disp-bl--bm")
 		image := e.ChildAttr("img.o_hero-media", "src")
+		next_release := e.ChildText("div.section_future_chapter")
 		latest_release := strings.Split(e.ChildText("div.flex-width-2.type-bs.type-sm--sm.style-italic > table > tbody > tr > td"), ", ")[0]
-		e.ForEach("a.o_property-link", func(_ int, el *colly.HTMLElement) {
-			handle := strings.Replace(el.Attr("href"), "/shonenjump/chapters/", "", -1)
-			recommended = append(recommended, handle)
+
+		// chapters
+		e.ForEach("div.o_sortable", func(_ int, el *colly.HTMLElement) {
+			free := true
+			mature := false
+			chapter_link_class := el.ChildAttr("a.o_chapter-container", "class")
+
+			if strings.Contains(chapter_link_class, "o_m-rated") {
+				mature = true
+			}
+
+			if strings.Contains(chapter_link_class, "o_chapter-archive") {
+				free = false
+			}
+
+			chapter_id := el.ChildAttr("a.o_chapter-container", "id")
+			chapter_number := el.ChildAttr("a.o_chapter-container", "name")
+			chapter_date := el.ChildText("td.pad-r-0")
+			chapter_link := el.ChildAttr("a.o_chapter-container", "href")
+			chapter_float, _ := strconv.ParseFloat(chapter_number, 64)
+			chapter := Chapter{
+				ID:     chapter_id,
+				Number: chapter_float,
+				Date:   chapter_date,
+				Link:   chapter_link,
+				Free:   free,
+				Mature: mature,
+			}
+			chapters = append(chapters, chapter)
 		})
+
+		// volumes
+		e.ForEach("div.o_chapter-vol-container", func(_ int, el *colly.HTMLElement) {
+			volumn_chapters := []Chapter{}
+			volumn_number := strings.Split(el.ChildAttr("a.o_manga-buy-now", "aria-label"), "Vol. ")[0]
+			volumn_link := el.ChildAttr("a.o_manga-buy-now", "href")
+			// TODO: add volumn image
+			el.ForEach("tr.o_chapter", func(_ int, el *colly.HTMLElement) {
+				free := true
+				mature := false
+				chapter_link_class := el.ChildAttr("a.o_chapter-container", "class")
+
+				if strings.Contains(chapter_link_class, "o_m-rated") {
+					mature = true
+				}
+
+				if strings.Contains(chapter_link_class, "o_chapter-archive") {
+					free = false
+				}
+
+				chapter_id := el.ChildAttr("a.o_chapter-container", "id")
+				chapter_number := el.ChildAttr("a.o_chapter-container", "name")
+				chapter_date := el.ChildText("td.pad-r-0")
+				chapter_link := el.ChildAttr("a.o_inner-link", "href")
+				chapter_float, _ := strconv.ParseFloat(chapter_number, 64)
+
+				chapter := Chapter{
+					ID:     chapter_id,
+					Number: chapter_float,
+					Date:   chapter_date,
+					Link:   chapter_link,
+					Free:   free,
+					Mature: mature,
+				}
+				volumn_chapters = append(volumn_chapters, chapter)
+			})
+
+			volumn := Volumn{
+				Number:   volumn_number,
+				Link:     "https://www.viz.com" + volumn_link,
+				Chapters: volumn_chapters,
+			}
+			volumns = append(volumns, volumn)
+		})
+
+		// recommended manga
+		e.ForEach("a.o_property-link", func(_ int, el *colly.HTMLElement) {
+			// TODO: add recommended manga titles to struct
+			title := el.Attr("rel")
+			handle := strings.Replace(el.Attr("href"), "/shonenjump/chapters/", "", -1)
+
+			recommended = append(recommended, RecommendedManga{
+				Title:  title,
+				Handle: handle,
+			})
+		})
+
+		uniqueChapters := removeDuplicates(chapters)
+
 		manga := Manga{
 			Title:         title,
 			Handle:        handle,
@@ -92,7 +210,11 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 			Author:        author,
 			HeroImage:     image,
 			LatestRelease: latest_release,
+			NextRelease:   next_release,
 			Recommended:   recommended,
+			Chapters:      uniqueChapters,
+			Volumes:       volumns,
+			Mature:        containsMature(chapters),
 		}
 		results = manga
 	})
@@ -127,4 +249,28 @@ func secondsToMinutes(inSeconds int) string {
 	seconds := inSeconds % 60
 	str := fmt.Sprintf("%v:%v", minutes, seconds)
 	return str
+}
+
+func containsMature(chapters []Chapter) bool {
+	for _, chapter := range chapters {
+		if chapter.Mature {
+			return true
+		}
+	}
+	return false
+}
+
+func removeDuplicates(chapter []Chapter) []Chapter {
+	var unique []Chapter
+sampleLoop:
+	for _, v := range chapter {
+		for i, u := range unique {
+			if v.Number == u.Number {
+				unique[i] = v
+				continue sampleLoop
+			}
+		}
+		unique = append(unique, v)
+	}
+	return unique
 }

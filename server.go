@@ -79,3 +79,12 @@ func main() {
 	// TODO: add /images route for promotional hero images
 	// TODO: add jwt auth to api routes
 }
+
+// func scrapeTest() {
+// 	handle := "chainsaw-man"
+// 	series, err := web.ScrapeOneSeries(handle)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Println(series)
+// }

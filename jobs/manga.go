@@ -15,12 +15,15 @@ func RefreshAllManga() error {
 		return err
 	}
 
+	// TODO: update instead of drop and replace
+
 	// Drop all manga from db
 	dropErr := db.DropMangaCollection()
 	if dropErr != nil {
 		log.Fatal(dropErr)
 		return dropErr
 	}
+
 
 	// Insert manga into db
 	err = db.InsertManyManga(manga)
