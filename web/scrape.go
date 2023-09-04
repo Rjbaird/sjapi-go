@@ -19,7 +19,7 @@ type RecentManga struct {
 }
 
 type Manga struct {
-	// TODO: download images to exertnal storage and save link to db
+	// TODO: download images to exertnal storage and save link to db https://www.youtube.com/watch?v=l2v_yIfGmho
 	Title         string             `json:"title" bson:"title,omitempts"`
 	Handle        string             `json:"handle" bson:"handle,omitempts"`
 	Description   string             `json:"description" bson:"description,omitempts"`
@@ -197,7 +197,6 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 
 		// recommended manga
 		e.ForEach("a.o_property-link", func(_ int, el *colly.HTMLElement) {
-			// TODO: add recommended manga titles to struct
 			title := el.Attr("rel")
 			handle := strings.Replace(el.Attr("href"), "/shonenjump/chapters/", "", -1)
 

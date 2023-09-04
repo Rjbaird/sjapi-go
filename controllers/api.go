@@ -6,7 +6,6 @@ import (
 )
 
 func ApiWelcome(c *fiber.Ctx) error {
-	// TODO: handle config errors
 	return c.JSON(fiber.Map{
 		"title":        "Welcome to the Shonen Jump API!",
 		"description":  "The Shonen Jump API is a JSON API for the Shonen Jump manga series.",
@@ -37,7 +36,6 @@ func GetSeries(c *fiber.Ctx) error {
 			"error": "Internal Server Error",
 		})
 	}
-	// TODO: render series json
 	return c.JSON(fiber.Map{
 		"data": series,
 	})

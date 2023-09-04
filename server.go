@@ -31,7 +31,7 @@ func main() {
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(1).Hour().Do(func() { jobs.Heartbeat() })
 	// s.Every(1).Hour().Do(func() { jobs.RefreshAllManga() })
-	// s.Every(1).Day().At("09:00").WaitForSchedule().Do(func() { jobs.RefreshAllManga() })
+	s.Every(1).Day().At("09:00").WaitForSchedule().Do(func() { jobs.RefreshAllManga() })
 
 	// setup fiber server
 	engine := html.New("./views", ".html")
