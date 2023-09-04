@@ -3,10 +3,14 @@
 <ul class="list-none p-0">
     {{ range .Data.Manga }}
     <li class="pb-4">
-        <!-- Should link to /manga/:handle -->
         <a href="https://www.viz.com/shonenjump/chapters/{{.Handle}}"
-            >{{.Title}}: {{.LatestRelease}}</a
+            >{{.Title}}: {{ if (eq .LatestChapter 0.0) }}Special One-Shot!{{
+            else }}{{.LatestChapter}}{{ end }}</a
         >
+        <a href="https://www.viz.com/shonenjump/chapters/{{.Handle}}"
+            >Read Now</a
+        >
+        <a href="/manga/{{.Handle}}">more...</a>
     </li>
     {{ end }}
 </ul>

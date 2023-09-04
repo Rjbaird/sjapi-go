@@ -38,8 +38,12 @@ func AllMangaPage(c *fiber.Ctx) error {
 			"error": "Internal Server Error",
 		})
 	}
+
+	d := map[string]interface{}{}
+	d["Manga"] = manga
+
 	return c.Render("manga", fiber.Map{
-		"Manga": manga,
+		"Data": d,
 	})
 }
 

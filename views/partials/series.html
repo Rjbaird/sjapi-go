@@ -2,4 +2,12 @@
 <h3>{{ .Series.Title }}</h3>
 <p>{{ .Series.Description }}</p>
 <p>{{ .Series.Author }}</p>
+<ul class="list-none p-0">
+    {{ range .Series.Chapters }}
+    <li class="pb-4">
+        <a href="{{.Link}}">Ch. {{.Number}}: {{.Date}}</a>
+    </li>
+    {{ end }}
+</ul>
+
 {{ end }}

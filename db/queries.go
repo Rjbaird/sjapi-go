@@ -21,7 +21,8 @@ func FindAllManga() (*[]web.Manga, error) {
 	manga := []web.Manga{}
 	// TODO: add a limit to the number of results
 	filter := bson.D{{}}
-	cursor, err := coll.Find(context.TODO(), filter)
+	opts := options.Find().SetProjection(bson.D{{Key: "title", Value: 1}, {Key: "handle", Value: 1}, {Key: "latest_chapter", Value: 1}, {Key: "chapters", Value: 1}})
+	cursor, err := coll.Find(context.TODO(), filter, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +41,7 @@ func FindRecentManga() (*[]web.Manga, error) {
 	manga := []web.Manga{}
 	filter := bson.D{{Key: "latest_release", Value: bson.D{{Key: "$ne", Value: ""}}}}
 	opts := options.Find().SetLimit(30)
+
 	cursor, err := coll.Find(context.TODO(), filter, opts)
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -18,19 +19,18 @@ type RecentManga struct {
 }
 
 type Manga struct {
-	Title       string `json:"title" bson:"title,omitempts"`
-	Handle      string `json:"handle" bson:"handle,omitempts"`
-	Description string `json:"description" bson:"description,omitempts"`
-	Author      string `json:"author" bson:"author,omitempts"`
-	HeroImage   string `json:"hero_image" bson:"image,omitempts"`
-	// TODO: download image to exertnal storage and save link to db
-	// TODO: parse date from latest release before adding to struct
-	LatestRelease string             `json:"latest_release" bson:"latest_release,omitempts"`
+	// TODO: download images to exertnal storage and save link to db
+	Title         string             `json:"title" bson:"title,omitempts"`
+	Handle        string             `json:"handle" bson:"handle,omitempts"`
+	Description   string             `json:"description" bson:"description,omitempts"`
+	Author        string             `json:"author" bson:"author,omitempts"`
+	HeroImage     string             `json:"hero_image" bson:"image,omitempts"`
+	LatestChapter float64            `json:"latest_chapter" bson:"latest_chapter,omitempts"`
 	NextRelease   string             `json:"next_release" bson:"next_release,omitempts"`
+	Mature        bool               `json:"mature" bson:"mature,omitempts"`
 	Recommended   []RecommendedManga `json:"recommended" bson:"recommended,omitempts"`
 	Chapters      []Chapter          `json:"chapters" bson:"chapters,omitempts"`
 	Volumes       []Volumn           `json:"volumes" bson:"volumes,omitempts"`
-	Mature        bool               `json:"mature" bson:"mature,omitempts"`
 }
 
 type Chapter struct {
@@ -113,7 +113,6 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 		author := e.ChildText("span.disp-bl--bm")
 		image := e.ChildAttr("img.o_hero-media", "src")
 		next_release := e.ChildText("div.section_future_chapter")
-		latest_release := strings.Split(e.ChildText("div.flex-width-2.type-bs.type-sm--sm.style-italic > table > tbody > tr > td"), ", ")[0]
 
 		// chapters
 		e.ForEach("div.o_sortable", func(_ int, el *colly.HTMLElement) {
@@ -130,13 +129,21 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 			}
 
 			chapter_id := el.ChildAttr("a.o_chapter-container", "id")
-			chapter_number := el.ChildAttr("a.o_chapter-container", "name")
+			chapter_string := el.ChildAttr("a.o_chapter-container", "name")
 			chapter_date := el.ChildText("td.pad-r-0")
+
+			chapter_number := 0.0
+
 			chapter_link := el.ChildAttr("a.o_chapter-container", "href")
-			chapter_float, _ := strconv.ParseFloat(chapter_number, 64)
+			chapter_float, err := strconv.ParseFloat(chapter_string, 64)
+
+			if err == nil {
+				chapter_number = chapter_float
+			}
+
 			chapter := Chapter{
 				ID:     chapter_id,
-				Number: chapter_float,
+				Number: chapter_number,
 				Date:   chapter_date,
 				Link:   chapter_link,
 				Free:   free,
@@ -150,7 +157,6 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 			volumn_chapters := []Chapter{}
 			volumn_number := strings.Split(el.ChildAttr("a.o_manga-buy-now", "aria-label"), "Vol. ")[0]
 			volumn_link := el.ChildAttr("a.o_manga-buy-now", "href")
-			// TODO: add volumn image
 			el.ForEach("tr.o_chapter", func(_ int, el *colly.HTMLElement) {
 				free := true
 				mature := false
@@ -202,6 +208,11 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 		})
 
 		uniqueChapters := removeDuplicates(chapters)
+		uniqueChapters = removeEmptyChapters(uniqueChapters)
+
+		sort.Slice(uniqueChapters, func(i, j int) bool {
+			return uniqueChapters[i].Number > uniqueChapters[j].Number
+		})
 
 		manga := Manga{
 			Title:         title,
@@ -209,7 +220,7 @@ func ScrapeOneSeries(handle string) (*Manga, error) {
 			Description:   description,
 			Author:        author,
 			HeroImage:     image,
-			LatestRelease: latest_release,
+			LatestChapter: uniqueChapters[0].Number,
 			NextRelease:   next_release,
 			Recommended:   recommended,
 			Chapters:      uniqueChapters,
@@ -273,4 +284,14 @@ sampleLoop:
 		unique = append(unique, v)
 	}
 	return unique
+}
+
+func removeEmptyChapters(chapters []Chapter) []Chapter {
+	var nonEmpty []Chapter
+	for _, v := range chapters {
+		if v.Number != 0 {
+			nonEmpty = append(nonEmpty, v)
+		}
+	}
+	return nonEmpty
 }
