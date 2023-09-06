@@ -73,18 +73,8 @@ func main() {
 	// TODO: add metadata to /api {version, uptime, docs, last update, etc}
 	// TODO: add api tests https://www.youtube.com/watch?v=XQzTUa9LPU8, https://www.youtube.com/watch?v=Ztk9d78HgC0
 
-	// TODO: add xml engine https://github.com/gofiber/recipes/blob/master/rss-feed/main.go
 	// TODO: add swaggerdocs https://github.com/gofiber/swagger
 	// TODO: create routes package
 	// TODO: add /images route for promotional hero images
 	// TODO: add jwt auth to api routes
 }
-
-// func scrapeTest() {
-// 	handle := "chainsaw-man"
-// 	series, err := web.ScrapeOneSeries(handle)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	fmt.Println(series)
-// }

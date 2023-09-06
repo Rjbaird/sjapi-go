@@ -2,15 +2,18 @@
 <p class="text-base italic my-5">{{.Data.Meta}}</p>
 <ul class="list-none p-0">
     {{ range .Data.Manga }}
-    <li class="pb-4">
+    <li class="flex flex-col space-y-1 pb-4">
         <a href="https://www.viz.com/shonenjump/chapters/{{.Handle}}"
-            >{{.Title}}: {{ if (eq .LatestChapter 0.0) }}Special One-Shot!{{
-            else }}{{.LatestChapter}}{{ end }}</a
+            >{{.Title}} - {{ if (eq .LatestChapter 0.0) }}Special One-Shot!{{
+            else }}Ch. {{.LatestChapter}}{{ end }}</a
         >
-        <a href="https://www.viz.com/shonenjump/chapters/{{.Handle}}"
-            >Read Now</a
-        >
-        <a href="/manga/{{.Handle}}">more...</a>
+        <div class="flex space-x-2">
+            {{ if (index .Chapters 0).Date }}
+            <p class="m-0">{{ (index .Chapters 0).Date }}</p>
+            <p class="m-0">|</p>
+            {{ end }}
+            <a href="/manga/{{.Handle}}">More info</a>
+        </div>
     </li>
     {{ end }}
 </ul>
